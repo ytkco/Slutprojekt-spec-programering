@@ -1,0 +1,37 @@
+[gd_resource type="TileSet" format=3 uid="uid://cb81ytkyfirk7"]
+
+[ext_resource type="Texture2D" uid="uid://c5o6oa50jwdo3" path="res://Assets/pixilart-frames (2)/pixil-frame-0.png" id="1_thwho"]
+[ext_resource type="Texture2D" uid="uid://dhbro5ajwtai1" path="res://Assets/my-tileset-85_tiles-test-1_tileset_godot/my-tileset-85_tiles-test-1_tileset_32x32.png" id="2_xpy8u"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_spa"]
+texture_region_size = Vector2i(32, 32)
+2:0/0 = 0
+1:0/0 = 0
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_anim"]
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:1/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_gcvnn"]
+texture = ExtResource("1_thwho")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hx003"]
+texture = ExtResource("2_xpy8u")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+
+[resource]
+resource_name = "My tileset"
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_spa")
+sources/1 = SubResource("TileSetAtlasSource_anim")
+sources/2 = SubResource("TileSetAtlasSource_gcvnn")
+sources/3 = SubResource("TileSetAtlasSource_hx003")
