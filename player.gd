@@ -3,22 +3,34 @@ extends CharacterBody2D
 class_name Player
 
 
-const MAX_SPEED = 350
-const ACC = 3000
+const MAX_SPEED = 700
+const ACC = 1500
 const JUMP_SPEED = 700
 const GRAVITY = 1500
 const KNOCKBACK_SPEED = 700
 
+
 enum{IDLE, WALK, AIR, SLIDE, DEAD}
+
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var anim: AnimationPlayer = $AnimationPlayer
+@onready var coyote_timer: Timer = $CoyoteTimer
+@onready var jump_buffer: Timer = $JumpBuffer
 
 
 var state=IDLE
+var friction = 1000
 var can_jump: bool = true
 var want_to_jump: bool = false
 var is_dead: bool = false
+var sliding: bool = false
+var SLIDE_SPEED = 500
+var speed = 1
+
 
 ###############GAME LOOP####################
 func _physics_process(delta: float) -> void:
+
 	match state: # kollar vad man gör och sänder vilka regler ska reagera
 		IDLE:
 			_idle_state(delta)
@@ -30,6 +42,24 @@ func _physics_process(delta: float) -> void:
 			_slide_state(delta)
 		DEAD:
 			_dead_state(delta)
+
+########### help function #################
+func _update_direction(input_x: float) -> void:
+	if input_x < 0:
+		sprite.flip_h = true
+	elif input_x > 0:
+		sprite.flip_h = false
+
+func _movement(input_x: float, delta: float) -> void:
+	if input_x != 0:
+		#Rörelse åt höger eller vänster
+		velocity.x = move_toward(velocity.x, input_x * MAX_SPEED, ACC*delta)
+	else:
+		#ingen input -> stanna
+		velocity.x = move_toward(velocity.x, 0, ACC*delta)
+	velocity.y += GRAVITY*delta #Lägger till gravitation i y-led
+	move_and_slide() #utför rörelse enligt velocity-vektor
+
 
 ############STATE funktioner###############
 func _idle_state(delta:float)->void:
@@ -53,6 +83,8 @@ func _walk_state(delta:float)->void:
 		_enter_air_state(true)
 	var input_x = Input.get_axis("Move left", "Move right")
 	
+	if Input.is_action_just_pressed("Slide"):
+		_enter_slide_state()
 	#2. Utföra rörelse
 	_update_direction(input_x)
 	_movement(input_x, delta)
@@ -61,6 +93,8 @@ func _walk_state(delta:float)->void:
 		_enter_air_state(false)
 	elif velocity.length() == 0:
 		_enter_idle_state()
+	
+
 
 func _air_state(delta:float)->void:
 	#1 get inputs
@@ -84,8 +118,30 @@ func _air_state(delta:float)->void:
 		_enter_idle_state()
 	
 
-func _slide_state(delta:float)-void:
-	pass
+func _slide_state(delta: float) -> void:
+	var angle = get_floor_angle()
+	var normal= get_floor_normal()
+	var dir = 1
+	if normal.x!=99999:#player explodeor somthing om den är på 0
+		dir=normal.x/abs(normal.x)#direction of slope 1 =höger -1 =vänster
+	print(dir)
+	print(global_position)
+	if sliding:
+		var slide_direction = Vector2(cos(angle),sin(angle))
+		speed=SLIDE_SPEED*sin(angle+0.5)
+		velocity.x=slide_direction.x*speed*dir
+		velocity.y=slide_direction.y*speed
+		print("Angle: ", rad_to_deg(angle))
+		move_and_slide()
+	if angle==0:
+		sliding=false
+		_enter_walk_state()
+	if Input.is_action_just_released("Slide"):
+			sliding=false
+			_enter_walk_state()
+
+
+
 
 func _dead_state(delta:float)->void:
 	pass
@@ -96,7 +152,7 @@ func _enter_idle_state() -> void:
 func _enter_walk_state() -> void:
 	state = WALK
 
-func _enter_air_state()->void:
+func _enter_air_state(jumping:bool)->void:
 	state = AIR
 	want_to_jump = false
 	if jumping:
@@ -105,15 +161,18 @@ func _enter_air_state()->void:
 	else:
 		can_jump = true
 		coyote_timer.start()
-func _enter_slide_state()->void
-	state = DEAD
+
+func _enter_slide_state()->void:
+	state = SLIDE
+	sliding=true
+
+func _enter_dead_state(dir:Vector2)->void:
+	pass
 ###############signals################
 
 
 func _on_coyote_timer_timeout() -> void:
 	can_jump=false
-
-
 
 
 func _on_jump_buffer_timeout() -> void:
