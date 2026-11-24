@@ -3,10 +3,10 @@ extends CharacterBody2D
 class_name Player
 
 
-const MAX_SPEED = 700
-const ACC = 1500
-const JUMP_SPEED = 700
-const GRAVITY = 1500
+const MAX_SPEED = 100000
+const ACC = 1000
+const JUMP_SPEED = 400
+const GRAVITY = 1000
 const KNOCKBACK_SPEED = 700
 
 
@@ -24,13 +24,13 @@ var can_jump: bool = true
 var want_to_jump: bool = false
 var is_dead: bool = false
 var sliding: bool = false
-var SLIDE_SPEED = 500
+var SLIDE_SPEED = 2000
 var speed = 1
 
 
 ###############GAME LOOP####################
 func _physics_process(delta: float) -> void:
-
+	print(velocity)
 	match state: # kollar vad man gör och sänder vilka regler ska reagera
 		IDLE:
 			_idle_state(delta)
@@ -51,7 +51,7 @@ func _update_direction(input_x: float) -> void:
 		sprite.flip_h = false
 
 func _movement(input_x: float, delta: float) -> void:
-	if input_x != 0:
+	if input_x != 0 and velocity.x<700 and velocity.x>-700:
 		#Rörelse åt höger eller vänster
 		velocity.x = move_toward(velocity.x, input_x * MAX_SPEED, ACC*delta)
 	else:
@@ -117,15 +117,15 @@ func _air_state(delta:float)->void:
 	elif is_on_floor():
 		_enter_idle_state()
 	
-
 func _slide_state(delta: float) -> void:
 	var angle = get_floor_angle()
 	var normal= get_floor_normal()
 	var dir = 1
-	if normal.x!=99999:#player explodeor somthing om den är på 0
+	if angle==0:
+		sliding=false
+		_enter_walk_state()
+	if normal.x!=0:#player explodeor somthing om den är på 0
 		dir=normal.x/abs(normal.x)#direction of slope 1 =höger -1 =vänster
-	print(dir)
-	print(global_position)
 	if sliding:
 		var slide_direction = Vector2(cos(angle),sin(angle))
 		speed=SLIDE_SPEED*sin(angle+0.5)
@@ -133,9 +133,6 @@ func _slide_state(delta: float) -> void:
 		velocity.y=slide_direction.y*speed
 		print("Angle: ", rad_to_deg(angle))
 		move_and_slide()
-	if angle==0:
-		sliding=false
-		_enter_walk_state()
 	if Input.is_action_just_released("Slide"):
 			sliding=false
 			_enter_walk_state()
