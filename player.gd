@@ -51,7 +51,7 @@ func _update_direction(input_x: float) -> void:
 		sprite.flip_h = false
 
 func _movement(input_x: float, delta: float) -> void:
-	if input_x != 0 and velocity.x<700 and velocity.x>-700:
+	if input_x != 0 and velocity.x<700 and velocity.x>-700:#gör att max hastigheten är 700 från vanlig acceleration och att när man slid så har man vanlig och kommer tillbaka till max 700
 		#Rörelse åt höger eller vänster
 		velocity.x = move_toward(velocity.x, input_x * MAX_SPEED, ACC*delta)
 	else:
